@@ -6,4 +6,6 @@
 2. Run `./SVsolver/SVsolver.py <path to configuration file>`
 
 ### How to run example
-Run ./SVsolver/SVsolver.py /example/config.ini
+1. Prepare coverage files for each contig using `samtools depth` and save them in example/coverage/
+2. Create output directory example/output/
+3. Run ./SVsolver/SVsolver.py /example/config.ini
