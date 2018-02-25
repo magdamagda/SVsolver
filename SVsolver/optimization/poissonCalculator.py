@@ -9,8 +9,8 @@ ALMOST_ZERO = 1e-11
 
 
 def get_edge_cov_probs(idx_cov):
-    idx,cov, edge_type, copy_numbers =idx_cov
-    probs=[get_poisson_probability_for_range(cov, c[0], c[1]) for c in copy_numbers]
+    idx,cov, edge_type, copy_numbers, mean_coverage = idx_cov
+    probs=[get_poisson_probability_for_range(cov, c[0], c[1], mean_coverage) for c in copy_numbers]
     lprobs=[get_log(p) for p in probs]
     return (idx, cov, probs, lprobs, edge_type)
 
@@ -21,11 +21,11 @@ def calculate(G, config):
     edges_props = nx.get_edge_attributes(G, "props")
     edge_idx = {}
     print("Computing Poisson probs. in parallel...")
-    edge_coverages = [(idx, edges_props[e].cov, edges_props[e].type, config.copy_numbers) for idx, e in enumerate(G.edges())]
+    edge_coverages = [(idx, edges_props[e].cov, edges_props[e].type, config.copy_numbers, config.mean_coverage) for idx, e in enumerate(G.edges())]
     edge_cov_probs = parmap(get_edge_cov_probs, edge_coverages,
                             percentage_fun=lambda i, p: print(
                                 "Finished {} percent".format(round(p, 2))) if i % 10 == 0 else None)
-    print("Concatenating probabilities...")
+    #print("Concatenating probabilities...")
     for idx_cov_probs_lp,e in zip(edge_cov_probs,list(G.edges())):
         idx, cov, probs, lprobs, edge_type = idx_cov_probs_lp
         #cov = edges_props[e].cov
@@ -52,27 +52,26 @@ def calculate(G, config):
 
     return initial_x, alphas, edge_log_probabilities_array
 
-def get_poisson_probability(coverage, copy_number):
-    global MEAN_COVERAGE
+def get_poisson_probability(coverage, copy_number, mean_coverage):
     if copy_number == 0:
         lambd = ALMOST_ZERO
     else:
-        lambd = copy_number * MEAN_COVERAGE / 2
+        lambd = copy_number * mean_coverage / 2
     return poisson.pmf(coverage, lambd)
 
-def get_poisson_probability_for_range(coverage, copy_number_start, copy_number_stop):
+def get_poisson_probability_for_range(coverage, copy_number_start, copy_number_stop, mean_coverage):
     result = 0
     for copy_num in range(copy_number_start, copy_number_stop + 1):
-        result += get_poisson_probability(coverage, copy_num)
+        result += get_poisson_probability(coverage, copy_num, mean_coverage)
     if result == 0:
         return ALMOST_ZERO
     return result
 
-def get_log_poisson_probability_for_range(coverage, copy_number_start, copy_number_stop):
-    result = np.log(get_poisson_probability_for_range(coverage, copy_number_start, copy_number_stop))
-    if np.isneginf(result):
-        return np.log(ALMOST_ZERO)
-    return result
+#def get_log_poisson_probability_for_range(coverage, copy_number_start, copy_number_stop):
+#    result = np.log(get_poisson_probability_for_range(coverage, copy_number_start, copy_number_stop))
+#    if np.isneginf(result):
+#        return np.log(ALMOST_ZERO)
+#    return result
 
 def get_log(p):
     log = np.log(p)

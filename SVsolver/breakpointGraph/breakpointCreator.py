@@ -10,7 +10,6 @@ def create(config, segments, CONTIGS_ENDPOINTS):
     return breakpoints
 
 def createBreakPoints(reads, include_not_mapped, min_aligment_length, breakpoints, CONTIGS_ENDPOINTS):
-    global nice_breakpoints, breakpoints_with_not_mapped, other_breakpoints
 
     if reads[0].query_alignment_start > min_aligment_length:
         brp1 = Breakpoint(NOT_MAPPED, 0, 0, Direction.NONE)
@@ -35,7 +34,6 @@ def createBreakPoints(reads, include_not_mapped, min_aligment_length, breakpoint
             brp2 = Breakpoint(next_read.reference_name, next_read.reference_start, next_read.query_alignment_start,
                               getDirection(next_read))
             addMateBreakpoints(brp1, brp2, read.query_name, breakpoints, CONTIGS_ENDPOINTS)
-            nice_breakpoints += 1
         elif include_not_mapped and read.query_alignment_end < next_read.query_alignment_start:
             # print("not mapped length:", next_read.query_alignment_start - read.query_alignment_end)
             # TODO count such cases
@@ -55,11 +53,8 @@ def createBreakPoints(reads, include_not_mapped, min_aligment_length, breakpoint
             brp2.setNext(brp3)
             brp3.setNext(brp2)
 
-            breakpoints_with_not_mapped += 1
-
         else:  # not inNeighbour(...) and read.query_alignment_end >= next_read.query_alignment_start:
             # TODO log such cases
-            other_breakpoints += 1
             print(read.reference_name, next_read.reference_name, str(read.query_alignment_end),
                   str(next_read.query_alignment_start), str(read.reference_end), str(next_read.reference_start),
                   str(read.query_alignment_length), str(next_read.query_alignment_length))

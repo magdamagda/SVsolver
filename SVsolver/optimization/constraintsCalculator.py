@@ -18,7 +18,7 @@ def prepareConstraintMatrixes(G, breakpoints, config):
         brpToFlowConstraint += [brp for brp in breakpoints[contig] if len(brp.mates) > 0 and brp.pos > -1]
 
     for brp in brpToFlowConstraint:
-        inEdges, outEdges = getInOutEdgesIdx(brp, edge_idx)
+        inEdges, outEdges = getInOutEdgesIdx(G, brp, edge_idx)
         row = [0] * (edges * xi_len)
         for idx in inEdges:
             for j, copy in enumerate(config.copy_numbers):

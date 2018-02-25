@@ -5,8 +5,9 @@ BREAKPOINT_INFO_FILE_NAME = 'breakpointgraphInfo.txt'
 PICKLED_GRAPH_FILE_NAME = 'breakpointgraph.gpickle'
 
 def save(G, breakpoints, output_directory):
+    print("Save graph")
     writeGraphInfo(G, breakpoints, output_directory)
-    nx.write_gpickle(os.path.join(output_directory, PICKLED_GRAPH_FILE_NAME))
+    nx.write_gpickle(G, os.path.join(output_directory, PICKLED_GRAPH_FILE_NAME))
 
 
 def writeGraphInfo(G, breakpoints, output_directory):

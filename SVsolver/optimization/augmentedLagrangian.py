@@ -31,7 +31,7 @@ def optimize(config, C, A, initial_x, alphas, edge_log_probabilities_array):
                                                   "gtol": 1e-9,
                                                   # The iteration will stop when max{|proj g_i | i = 1, ..., n}
                                                   # <= gtol where pg_i is the i-th component of the projected gradient.
-                                                  "disp": True}
+                                                  "disp": False}
                                          )  # callback = callback_fun) #Doesn't work?!
         x = result.x
         goal_fun = goalFunction(x, edge_log_probabilities_array, alphas)
@@ -57,6 +57,8 @@ def optimize(config, C, A, initial_x, alphas, edge_log_probabilities_array):
         lambd = updateLambda(lambd, mi, x, C, A)
         mi = config.penalty_coefficient_multiplier * mi
         k += 1
+
+    print("Optymization finished")
 
     return x, results
 

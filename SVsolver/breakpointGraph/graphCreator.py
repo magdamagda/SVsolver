@@ -15,6 +15,8 @@ def create(breakpoints, bam_file_coverage, coverage):
     makeEdges(breakpoints, G, bam_file_coverage, coverage)
     subgraphs = getSubgraphs(G, breakpoints)
     removeTwoNodesSubGraphs(G, subgraphs)
+    print("Nodes: ", G.nodes())
+    print("Edges: ", G.edges())
     return G
 
 
@@ -23,9 +25,10 @@ def addSameBreakpointWithOppositDirection(brp):
                       Direction.RIGHT if brp.direction == Direction.LEFT else brp.direction == Direction.LEFT)
 
 
-def getNextLeftBrp(contig, idx, breakpoints):
+def getNextLeftBrp(contig, i, breakpoints):
+    idx = i
     idx += 1
-    while idx < len(breakpoints[contig]) and breakpoints[contig][idx].direction != Direction.LEFT:
+    while idx < len(breakpoints[contig]) and (breakpoints[contig][idx].direction != Direction.LEFT or breakpoints[contig][i].pos == breakpoints[contig][idx].pos):
         idx += 1
     return breakpoints[contig][idx]
 
@@ -35,8 +38,8 @@ def makeEdges(breakpoints, G, bam_file_coverage, coverage):
     for contig in breakpoints:
         # if contig == NOT_MAPPED:
         #    continue
-        breakpoints = breakpoints[contig]
-        for idx, brp in enumerate(breakpoints):
+        contig_breakpoints = breakpoints[contig]
+        for idx, brp in enumerate(contig_breakpoints):
             # print(contig, brp.pos)
             for m in brp.mates:
                 addEdge(G, brp, m, EdgeType.MATE, 0, None, bam_file_coverage, coverage)
@@ -50,13 +53,13 @@ def makeEdges(breakpoints, G, bam_file_coverage, coverage):
     for contig in breakpoints:
         if contig == NOT_MAPPED:
             continue
-        breakpoints = breakpoints[contig]
-        breakpoints += oppositBreakPoints[contig]
-        breakpoints.sort(key=lambda x: x.pos)
-        for idx, brp in enumerate(breakpoints):
+        contig_breakpoints = breakpoints[contig]
+        contig_breakpoints += oppositBreakPoints[contig]
+        contig_breakpoints.sort(key=lambda x: x.pos)
+        for idx, brp in enumerate(contig_breakpoints):
             if brp.direction == Direction.RIGHT:
-                print(brp)
-                next_read = getNextLeftBrp(contig, idx)
+                #print(brp)
+                next_read = getNextLeftBrp(contig, idx, breakpoints)
                 addEdge(G, brp, next_read, EdgeType.NEXT_READ, abs(next_read.pos - brp.pos), None, bam_file_coverage, coverage)
 
 def addEdge(G, brp1, brp2, edge_type, l, c, bam_file_coverage, coverage):
@@ -105,7 +108,7 @@ def getSubgraphs(G, breakpoints):
                         q.append(n)
                         subNodes.append(n)
             result.append(nx.subgraph(G, subNodes))
-            print(str(len(subNodes)))
+            #print(str(len(subNodes)))
 
     return result
 

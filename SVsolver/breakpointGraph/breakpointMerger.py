@@ -22,14 +22,13 @@ def joinBreakPoints(breakpoints, max_breakpoint_distance_to_merge):
     for contig in breakpoints:
         if contig == NOT_MAPPED:
             continue
-        breakpoints = breakpoints[contig]
-        breakpoints.sort(key=lambda x: x.pos)
-        prev_breakpoint = None
-        for i in range(0, len(breakpoints)):
-            brp = breakpoints[i]
+        contig_breakpoints = breakpoints[contig]
+        contig_breakpoints.sort(key=lambda x: x.pos)
+        for i in range(0, len(contig_breakpoints)):
+            brp = contig_breakpoints[i]
             j = i - 1
-            while j >= 0 and (inNeighbour(breakpoints[j].pos, brp.pos, max_breakpoint_distance_to_merge) or breakpoints[j].pos == -1):
-                prev_breakpoint = breakpoints[j]
+            while j >= 0 and (inNeighbour(contig_breakpoints[j].pos, brp.pos, max_breakpoint_distance_to_merge) or contig_breakpoints[j].pos == -1):
+                prev_breakpoint = contig_breakpoints[j]
                 if prev_breakpoint.pos != -1 and prev_breakpoint.direction == brp.direction and not brp.terminal:
                     mergeBreakPoints(prev_breakpoint, brp)
                     brp.pos = -1
@@ -43,8 +42,7 @@ def removeUnsupportedBreakpoints(breakpoints, min_breakpoint_support):
     for contig in breakpoints:
         if contig == NOT_MAPPED:
             continue
-        breakpoints = breakpoints[contig]
-        for brp in breakpoints:
+        for brp in breakpoints[contig]:
             if brp.pos > -1 and not brp.terminal:
                 for mate in list(brp.mates):
                     common_reads = brp.reads.intersection(mate.reads)
@@ -62,8 +60,7 @@ def removeUnsupportedBreakpoints(breakpoints, min_breakpoint_support):
     for contig in breakpoints:
         if contig == NOT_MAPPED:
             continue
-        breakpoints = breakpoints[contig]
-        for brp in breakpoints:
+        for brp in breakpoints[contig]:
             if brp.pos > -1:
                 if (len(brp.mates) == 0 or len(brp.reads) < min_breakpoint_support) and not brp.terminal:
                     brp.pos = -1
@@ -83,8 +80,7 @@ def mergeNotMapped(breakpoints):
     for contig in breakpoints:
         if contig == NOT_MAPPED:
             continue
-        breakpoints = breakpoints[contig]
-        for brp in breakpoints:
+        for brp in breakpoints[contig]:
             not_mapped = [m for m in brp.mates if m.contig == NOT_MAPPED]
             without_next = None
             without_next_sup = 0
